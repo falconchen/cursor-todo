@@ -100,9 +100,11 @@ components:
       required:
         - title
       properties:
-        id: 
+        id:
           type: string
         title:
           type: string
         completed:
+          type: boolean
+        deleted:
           type: boolean

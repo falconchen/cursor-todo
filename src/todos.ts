@@ -8,10 +8,11 @@ app.use('/todos/*', cors())
 
 type Todo = {
   id: string
-  title: string 
+  title: string
   completed: boolean
   createdAt: string
   completedAt: string | null
+  deleted: boolean // 新增字段
 }
 
 app.get('/', async (c) => {
@@ -41,7 +42,8 @@ app.post('/todos', async (c) => {
   const todo: Todo = {
     ...todoData,
     createdAt: new Date().toISOString(),
-    completedAt: null
+    completedAt: null,
+    deleted: false // 新增字段初始化
   }
   await c.env.TODOS.put(todo.id, JSON.stringify(todo))
   return c.json(todo)
@@ -63,7 +65,8 @@ app.put('/todos/:id', async (c) => {
     ...todoData,
     completedAt: todoData.completed && !parsedExistingTodo.completed
       ? new Date().toISOString()
-      : parsedExistingTodo.completedAt
+      : parsedExistingTodo.completedAt,
+    deleted: parsedExistingTodo.deleted // 保留原有的 deleted 值
   }
   
   await c.env.TODOS.put(c.req.param('id'), JSON.stringify(updatedTodo))
@@ -76,11 +79,11 @@ app.delete('/todos/:id', async (c) => {
 })
 
 const seedData: Todo[] = [
-  { id: '1', title: '买牛奶', completed: false, createdAt: '2024-03-10T08:00:00Z', completedAt: null },
-  { id: '2', title: '写报告', completed: true, createdAt: '2024-03-09T14:30:00Z', completedAt: '2024-03-10T16:45:00Z' },
-  { id: '3', title: '打电话给妈妈', completed: false, createdAt: '2024-03-11T10:15:00Z', completedAt: null },
-  { id: '4', title: '组织团队会议', completed: false, createdAt: '2024-03-12T09:00:00Z', completedAt: null },
-  { id: '5', title: '去健身房锻炼', completed: true, createdAt: '2024-03-08T18:00:00Z', completedAt: '2024-03-09T20:30:00Z' },
+  { id: '1', title: '买牛奶', completed: false, createdAt: '2024-03-10T08:00:00Z', completedAt: null, deleted: false },
+  { id: '2', title: '写报告', completed: true, createdAt: '2024-03-09T14:30:00Z', completedAt: '2024-03-10T16:45:00Z', deleted: false },
+  { id: '3', title: '打电话给妈妈', completed: false, createdAt: '2024-03-11T10:15:00Z', completedAt: null, deleted: false },
+  { id: '4', title: '组织团队会议', completed: false, createdAt: '2024-03-12T09:00:00Z', completedAt: null, deleted: false },
+  { id: '5', title: '去健身房锻炼', completed: true, createdAt: '2024-03-08T18:00:00Z', completedAt: '2024-03-09T20:30:00Z', deleted: false },
 ]
 
 app.post('/todos/seed', async (c) => {
