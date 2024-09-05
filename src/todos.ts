@@ -14,6 +14,16 @@ type Todo = {
   completedAt: string | null
 }
 
+app.get('/', async (c) => {
+  const { keys } = await c.env.TODOS.list()
+  if (keys.length === 0) {
+    return c.text('No todos found')
+  }
+  const randomKey = keys[Math.floor(Math.random() * keys.length)].name
+  const todo = await c.env.TODOS.get(randomKey)
+  return todo ? c.json(JSON.parse(todo)) : c.text('Todo not found')
+})
+
 app.get('/todos', async (c) => {
   const { keys } = await c.env.TODOS.list()
   const todos = await Promise.all(
@@ -27,7 +37,7 @@ app.get('/todos', async (c) => {
 })
 
 app.post('/todos', async (c) => {
-  const todoData = await c.req.json<Omit<Todo, 'createdAt' | 'completedAt'>>()
+  const todoData = await c.req.json<Todo>()
   const todo: Todo = {
     ...todoData,
     createdAt: new Date().toISOString(),
@@ -43,7 +53,7 @@ app.get('/todos/:id', async (c) => {
 })
 
 app.put('/todos/:id', async (c) => {
-  const todoData = await c.req.json<Omit<Todo, 'createdAt'>>()
+  const todoData = await c.req.json<Todo>()
   const existingTodo = await c.env.TODOS.get(c.req.param('id'))
   if (!existingTodo) return c.notFound()
   
